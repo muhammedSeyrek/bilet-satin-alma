@@ -50,7 +50,7 @@ Sistemi test etmek için aşağıdaki hazır kullanıcı hesaplarını kullanabi
 
 - **Admin:**
   - **E-posta:** `admin@sistem.com`
-  - **Şifre:** `admin123` *(veya en son belirlediğiniz şifre)*
+  - **Şifre:** `admin`
 
 - **Firma Admin:**
   - **E-posta:** `ali@kamilkoc.com`
