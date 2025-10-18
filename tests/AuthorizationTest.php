@@ -41,4 +41,30 @@ class AuthorizationTest extends TestCase
         // sistemimizin IDOR zafiyetine karşı güvenli olduğu anlamına gelir.
         $this->assertFalse($bilet, "Güvenlik açığı! Bir kullanıcı başka bir kullanıcının biletine erişebiliyor.");
     }
+
+    // BU YENİ FONKSİYONU AuthorizationTest.php DOSYASINA EKLE
+
+    /**
+     * Bu test, @runInSeparateProcess notasyonu sayesinde kendi izole ortamında çalışır.
+     * Bu, header() fonksiyonlarının test edilmesini mümkün kılar.
+     * @runInSeparateProcess
+     */
+    public function test_giris_yapmamis_kullanici_korumali_sayfalara_erisemez(): void
+    {
+        // Hazırlık: session'ı boşaltarak giriş yapılmamış bir durumu simüle et
+        $_SESSION = [];
+        
+        // Eylem: bilet_al.php'yi çalıştırmayı dene
+        // Bu kod, header() yönlendirmesi nedeniyle bir istisna (exception) fırlatacaktır.
+        // Ancak Xdebug bu yönlendirmeyi yakalayıp analiz edebilir.
+        
+        // PHPUnit'e, bu testin bir çıktı üreteceğini söylüyoruz.
+        $this->expectOutputString('');
+
+        // bilet_al.php dosyasını dahil et
+        // Not: header() yönlendirmesi beklendiği gibi çalışırsa,
+        // bu kodun altındaki satırlara asla ulaşılamaz.
+        include __DIR__ . '/../bilet_al.php';
+    }
+    
 }
