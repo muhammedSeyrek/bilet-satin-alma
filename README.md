@@ -16,21 +16,16 @@ Bu yöntem, gerekli tüm bağımlılıkları içeren bir ortamda projeyi en kola
     git clone [https://github.com/muhammedSeyrek/bilet-satin-alma.git](https://github.com/muhammedSeyrek/bilet-satin-alma.git)
     cd bilet-satin-alma
     ```
-2.  **Veritabanını ve test verilerini oluşturun:**
-    Bu komut, `purchasing_tickets.db` dosyasını, tüm tabloları ve test kullanıcılarını oluşturur.
-    ```bash
-    php setup.php
-    ```
-3.  **Docker image'ını build edin:**
+2.  **Docker image'ını build edin:**
     ```bash
     docker build -t bilet-satin-alma .
     ```
-4.  **Docker container'ını çalıştırın:**
+3.  **Docker container'ını çalıştırın:**
     Bu komut, veritabanı dosyasının kalıcı olmasını ve kod değişikliklerinin anında yansımasını sağlar.
     ```bash
     docker run -p 8080:80 -v bilet-satin-alma
     ```
-5.  **Siteye erişin:**
+4.  **Siteye erişin:**
     Tarayıcınızdan `http://localhost:8080` adresine gidin.
 
 ### 2. Lokal Kurulum (Docker Olmadan)
