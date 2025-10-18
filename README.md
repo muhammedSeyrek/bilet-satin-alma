@@ -32,12 +32,11 @@ Bu yöntem, gerekli tüm bağımlılıkları içeren bir ortamda projeyi en kola
 
 1.  Bilgisayarınızda PHP ve `php-sqlite3` eklentisinin kurulu olduğundan emin olun.
 2.  Projeyi klonlayın ve klasörün içine girin.
-3.  Veritabanını oluşturmak için `php setup.php` komutunu çalıştırın.
-4.  PHP'nin dahili sunucusunu başlatın:
+3.  PHP'nin dahili sunucusunu başlatın:
     ```bash
     php -S localhost:8000
     ```
-5.  Tarayıcınızdan `http://localhost:8000` adresine gidin.
+4.  Tarayıcınızdan `http://localhost:8000` adresine gidin.
 
 ## Test Hesapları
 
