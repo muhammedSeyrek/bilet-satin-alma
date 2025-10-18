@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php" colors="true">
+    <source>
+        <directory>.</directory>
+        <exclude>
+            <directory>vendor</directory>
+            <directory>tests</directory>
+            <directory>font</directory>
+            <file>tfpdf.php</file>
+        </exclude>
+    </source>
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
