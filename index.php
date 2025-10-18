@@ -1,68 +1,41 @@
 <?php
-// Oturumu her zaman en başta başlat
-session_start();
+$page_title = "Ana Sayfa";
+require_once 'header.php';
+require_once 'fonksiyonlar.php'; // Tarih formatlama fonksiyonu için
 
-// Hata raporlamayı açalım
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// --- YENİ EKLENEN PHP BÖLÜMÜ ---
 $kalkis_yeri = isset($_GET['kalkis']) ? $_GET['kalkis'] : '';
 $varis_yeri = isset($_GET['varis']) ? $_GET['varis'] : '';
+$seferler = [];
 
 try {
     $pdo = new PDO('sqlite:purchasing_tickets.db');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Temel SQL sorgusu: Sadece kalkış saati geçmemiş seferleri getirir
-    $sql = "SELECT * FROM Trips WHERE departure_time > datetime('now', 'localtime')";
+    $sql = "SELECT Trips.*, Bus_Company.name AS company_name 
+            FROM Trips 
+            JOIN Bus_Company ON Trips.company_id = Bus_Company.id";
     $params = [];
-
-    // Eğer arama yapılmışsa, WHERE koşullarını SQL'e ekle
     if (!empty($kalkis_yeri) && !empty($varis_yeri)) {
-        $sql .= " AND departure_city = ? AND destination_city = ?";
+        $sql .= " WHERE Trips.departure_city = ? AND Trips.destination_city = ?";
         $params[] = $kalkis_yeri;
         $params[] = $varis_yeri;
     }
+    $sql .= " ORDER BY departure_time ASC";
     
-    $sql .= " ORDER BY departure_time ASC"; // Seferleri tarihe göre sırala
-
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    $seferler = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $tum_seferler = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    foreach ($tum_seferler as $sefer) {
+        if (strtotime($sefer['departure_time']) > time()) {
+            $seferler[] = $sefer;
+        }
+    }
 } catch (PDOException $e) {
-    die("Veritabanı hatası: " . $e->getMessage());
+    header("Location: hata.php?mesaj=Veritabani baglantisinda bir sorun olustu.");
+    exit();
 }
-// --- YENİ EKLENEN PHP BÖLÜMÜ BİTTİ ---
 ?>
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bilet Satın Alma Platformu</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="index.php">Bilet Platformu</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="#">Hoş Geldin, <?= htmlspecialchars($_SESSION['user_fullname']); ?></a></li>
-                    <li class="nav-item"><a class="nav-link" href="biletlerim.php">Biletlerim</a></li>
-                    <li class="nav-item"><a class="nav-link" href="cikis.php">Çıkış Yap</a></li>
-                <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="giris.php">Giriş Yap</a></li>
-                    <li class="nav-item"><a class="nav-link" href="kayit.php">Kayıt Ol</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-    </div>
-</nav>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -103,12 +76,8 @@ try {
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
                                 <h5 class="card-title"><?= htmlspecialchars($sefer['departure_city']) ?> -> <?= htmlspecialchars($sefer['destination_city']) ?></h5>
-                                <p class="card-text mb-1">
-                                    <strong>Kalkış:</strong> <?= htmlspecialchars($sefer['departure_time']) ?>
-                                </p>
-                                <p class="card-text">
-                                    <strong>Firma:</strong> <?= htmlspecialchars($sefer['company_id']) ?>
-                                </p>
+                                <p class="card-text mb-1"><strong>Kalkış:</strong> <?= format_turkish_date($sefer['departure_time']) ?></p>
+                                <p class="card-text"><strong>Firma:</strong> <?= htmlspecialchars($sefer['company_name']) ?></p>
                             </div>
                             <div class="text-end">
                                 <h4 class="text-success"><?= htmlspecialchars($sefer['price']) ?> TL</h4>
@@ -126,6 +95,6 @@ try {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php
+require_once 'footer.php';
+?>

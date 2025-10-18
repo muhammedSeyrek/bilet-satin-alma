@@ -1,56 +1,46 @@
 <?php
-session_start();
-// Güvenlik Kontrolleri
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin' || !isset($_GET['id'])) {
-    header("Location: index.php");
+$page_title = "Firma Düzenle";
+require_once 'admin_header.php';
+
+// Güvenlik Kontrolü (header'da zaten var ama ID kontrolü için ekliyoruz)
+if (!isset($_GET['id'])) {
+    header("Location: admin_paneli.php");
     exit();
 }
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 $firma_id_to_edit = $_GET['id'];
+$firma = null;
 
 try {
     $pdo = new PDO('sqlite:purchasing_tickets.db');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // --- UPDATE KODU ---
-    // Eğer form gönderilmişse (POST metoduyla)
+    // Eğer form gönderilmişse, UPDATE işlemini yap
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $yeni_firma_adi = $_POST['firma_adi'];
-
         $sqlUpdate = "UPDATE Bus_Company SET name = ? WHERE id = ?";
         $stmt = $pdo->prepare($sqlUpdate);
         $stmt->execute([$yeni_firma_adi, $firma_id_to_edit]);
-
         header("Location: admin_paneli.php");
         exit();
     }
 
-    // DÜZENLENECEK FİRMANIN BİLGİLERİNİ ÇEK
+    // Formu doldurmak için mevcut firma bilgilerini çek
     $stmt = $pdo->prepare("SELECT * FROM Bus_Company WHERE id = ?");
     $stmt->execute([$firma_id_to_edit]);
     $firma = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Eğer firma bulunamazsa, admin paneline geri yönlendir
     if (!$firma) {
         header("Location: admin_paneli.php");
         exit();
     }
-
 } catch (PDOException $e) {
-    die("Veritabanı hatası: " . $e->getMessage());
+    header("Location: hata.php?mesaj=Veritabani hatasi olustu.");
+    exit();
 }
 ?>
-<!doctype html>
-<html lang="tr">
-<head>
-    <title>Firma Düzenle - Admin Paneli</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    </nav>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -72,5 +62,8 @@ try {
         </div>
     </div>
 </div>
-</body>
-</html>
+
+<?php
+// Ortak footer'ı çağır
+require_once 'footer.php';
+?>

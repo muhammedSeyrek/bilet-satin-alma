@@ -3,6 +3,8 @@ session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+require_once 'fonksiyonlar.php';
+
 if (!isset($_SESSION['user_id']) || !isset($_GET['bilet_id'])) {
     die("Geçersiz istek.");
 }
@@ -91,12 +93,12 @@ $pdf->Cell(0, 8, $bilet['departure_city'] . ' -> ' . $bilet['destination_city'],
 $pdf->SetFont('DejaVu', 'B', 12);
 $pdf->Cell(50, 8, 'Kalkış Zamanı:');
 $pdf->SetFont('DejaVu', '', 12);
-$pdf->Cell(0, 8, $bilet['departure_time'], 0, 1);
+$pdf->Cell(0, 8, format_turkish_date($bilet['departure_time']), 0, 1);
 
 $pdf->SetFont('DejaVu', 'B', 12);
 $pdf->Cell(50, 8, 'Tahmini Varış:');
 $pdf->SetFont('DejaVu', '', 12);
-$pdf->Cell(0, 8, $bilet['arrival_time'], 0, 1);
+$pdf->Cell(0, 8, format_turkish_date($bilet['arrival_time']), 0, 1);
 $pdf->Ln(8);
 
 // ---- Fiyat ----

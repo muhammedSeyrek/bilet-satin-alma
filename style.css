@@ -1,0 +1,9 @@
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Hafif bir gölge efekti */
+    transition: all 0.2s ease-in-out; /* Üzerine gelince yumuşak geçiş */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Üzerine gelince hafifçe yukarı kalksın */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}

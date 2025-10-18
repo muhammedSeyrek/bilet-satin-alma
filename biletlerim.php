@@ -1,34 +1,33 @@
 <?php
-// Oturumu her zaman en başta başlat
-session_start();
+// Sayfa başlığını ayarla ve header'ı çağır
+$page_title = "Biletlerim";
+require_once 'header.php';
 
-// GÜVENLİK KONTROLÜ: Kullanıcı giriş yapmamışsa, giriş sayfasına yönlendir.
+// Güvenlik kontrolü (header.php zaten session_start yapıyor)
 if (!isset($_SESSION['user_id'])) {
     header("Location: giris.php");
     exit();
 }
 
-// Hata raporlamayı aç
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
+// Sadece bu sayfaya özgü PHP kodları
 $user_id = $_SESSION['user_id'];
-$biletler = []; // Biletleri tutacağımız boş dizi
+$biletler = [];
 
 try {
     $pdo = new PDO('sqlite:purchasing_tickets.db');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Veritabanından biletleri çekmek için SQL sorgusu
-    // JOIN kullanarak Tickets ve Trips tablolarını birleştiriyoruz
+    // Firma adını da çeken güncel SQL sorgusu
     $sql = "SELECT 
                 Tickets.id AS bilet_id,
                 Trips.departure_city,
                 Trips.destination_city,
                 Trips.departure_time,
-                Tickets.total_price
+                Tickets.total_price,
+                Bus_Company.name AS company_name
             FROM Tickets
             JOIN Trips ON Tickets.trip_id = Trips.id
+            JOIN Bus_Company ON Trips.company_id = Bus_Company.id
             WHERE Tickets.user_id = ? AND Tickets.status = 'active'";
             
     $stmt = $pdo->prepare($sql);
@@ -36,37 +35,13 @@ try {
     $biletler = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    die("Veritabanı hatası: " . $e->getMessage());
+    header("Location: hata.php?mesaj=Veritabani hatasi olustu.");
+    exit();
 }
-?>
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Biletlerim</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="index.php">Bilet Platformu</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Hoş Geldin, <?= htmlspecialchars($_SESSION['user_fullname']); ?></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="biletlerim.php">Biletlerim</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="cikis.php">Çıkış Yap</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+// Fonksiyonlar dosyasını dahil et (tarih formatı için)
+require_once 'fonksiyonlar.php';
+?>
 
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -82,6 +57,7 @@ try {
             <thead>
                 <tr>
                     <th>Güzergah</th>
+                    <th>Firma</th>
                     <th>Kalkış Zamanı</th>
                     <th>Fiyat</th>
                     <th>İşlemler</th>
@@ -91,7 +67,8 @@ try {
                 <?php foreach ($biletler as $bilet): ?>
                     <tr>
                         <td><?= htmlspecialchars($bilet['departure_city']) ?> -> <?= htmlspecialchars($bilet['destination_city']) ?></td>
-                        <td><?= htmlspecialchars($bilet['departure_time']) ?></td>
+                        <td><?= htmlspecialchars($bilet['company_name']) ?></td>
+                        <td><?= format_turkish_date($bilet['departure_time']) // Tarih formatlama fonksiyonunu kullanıyoruz ?></td>
                         <td><?= htmlspecialchars($bilet['total_price']) ?> TL</td>
                         <td>
                             <a href="bilet_iptal.php?bilet_id=<?= htmlspecialchars($bilet['bilet_id']) ?>" class="btn btn-danger btn-sm">İptal Et</a>
@@ -104,7 +81,7 @@ try {
     <?php endif; ?>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+<?php
+// Footer'ı çağır
+require_once 'footer.php';
+?>

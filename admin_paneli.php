@@ -1,14 +1,6 @@
 <?php
-session_start();
-
-// Güvenlik Kontrolü
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header("Location: index.php");
-    exit();
-}
-
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+$page_title = "Yönetim Paneli";
+require_once 'admin_header.php'; // Admin için olan header'ı çağır
 
 try {
     $pdo = new PDO('sqlite:purchasing_tickets.db');
@@ -30,27 +22,12 @@ try {
     $kuponlar = $stmt_kuponlar->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    die("Veritabanı hatası: " . $e->getMessage());
+    // die("Veritabanı hatası: " . $e->getMessage()); // Bu satırı artık kullanmıyoruz
+    header("Location: hata.php?mesaj=Veritabani hatasi olustu.");
+    exit();
 }
 ?>
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Paneli</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container">
-        <a class="navbar-brand" href="admin_paneli.php">Admin Paneli</a>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link" href="#">Hoş Geldin, <?= htmlspecialchars($_SESSION['user_fullname']); ?></a></li>
-            <li class="nav-item"><a class="nav-link" href="cikis.php">Çıkış Yap</a></li>
-        </ul>
-    </div>
-</nav>
+
 <div class="container mt-5">
     
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -62,8 +39,7 @@ try {
             <tr>
                 <th>Firma ID</th>
                 <th>Firma Adı</th>
-                <th>İşlemler</th>
-            </tr>
+                <th style="width: 200px;">İşlemler</th> </tr>
         </thead>
         <tbody>
             <?php if (empty($firmalar)): ?>
@@ -73,10 +49,14 @@ try {
                     <tr>
                         <td><?= htmlspecialchars($firma['id']) ?></td>
                         <td><?= htmlspecialchars($firma['name']) ?></td>
-                        <td>
-                            <a href="firma_duzenle.php?id=<?= htmlspecialchars($firma['id']) ?>" class="btn btn-warning btn-sm">Düzenle</a>
-                            <a href="firma_sil.php?id=<?= htmlspecialchars($firma['id']) ?>" class="btn btn-danger btn-sm">Sil</a>
-                        </td>
+                    <td>
+                        <a href="firma_duzenle.php?id=<?= htmlspecialchars($firma['id']) ?>" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square"></i> Düzenle
+                        </a>
+                        <a href="firma_sil.php?id=<?= htmlspecialchars($firma['id']) ?>" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i> Sil
+                        </a>
+                    </td>
                     </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -95,8 +75,7 @@ try {
                 <th>Ad Soyad</th>
                 <th>E-posta</th>
                 <th>Atandığı Firma</th>
-                <th>İşlemler</th>
-            </tr>
+                <th style="width: 200px;">İşlemler</th> </tr>
         </thead>
         <tbody>
             <?php if (empty($firma_adminleri)): ?>
@@ -108,8 +87,12 @@ try {
                         <td><?= htmlspecialchars($admin['email']) ?></td>
                         <td><?= htmlspecialchars($admin['company_name']) ?></td>
                         <td>
-                            <a href="firma_admin_duzenle.php?id=<?= htmlspecialchars($admin['id']) ?>" class="btn btn-warning btn-sm">Düzenle</a>
-                            <a href="firma_admin_sil.php?id=<?= htmlspecialchars($admin['id']) ?>" class="btn btn-danger btn-sm">Sil</a>
+                            <a href="firma_admin_duzenle.php?id=<?= htmlspecialchars($admin['id']) ?>" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-square"></i> Düzenle
+                            </a>
+                            <a href="firma_admin_sil.php?id=<?= htmlspecialchars($admin['id']) ?>" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Sil
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -130,15 +113,13 @@ try {
                 <th>İndirim Oranı (%)</th>
                 <th>Limit</th>
                 <th>Son Kullanma</th>
-                <th>Firma (Genel ise boş)</th>
-                <th>İşlemler</th>
+                <th>Firma</th>
+                <th style="width: 200px;">İşlemler</th> </tr>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($kuponlar)): ?>
-                <tr>
-                    <td colspan="6" class="text-center">Sistemde kayıtlı kupon bulunmamaktadır.</td>
-                </tr>
+                <tr><td colspan="6" class="text-center">Sistemde kayıtlı kupon bulunmamaktadır.</td></tr>
             <?php else: ?>
                 <?php foreach ($kuponlar as $kupon): ?>
                     <tr>
@@ -148,8 +129,12 @@ try {
                         <td><?= htmlspecialchars($kupon['expire_date']) ?></td>
                         <td><?= htmlspecialchars($kupon['company_id'] ?? 'Tüm Firmalar') ?></td>
                         <td>
-                            <a href="kupon_duzenle.php?id=<?= htmlspecialchars($kupon['id']) ?>" class="btn btn-warning btn-sm">Düzenle</a>
-                            <a href="kupon_sil.php?id=<?= htmlspecialchars($kupon['id']) ?>" class="btn btn-danger btn-sm">Sil</a>
+                            <a href="kupon_duzenle.php?id=<?= htmlspecialchars($kupon['id']) ?>" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-square"></i> Düzenle
+                            </a>
+                            <a href="kupon_sil.php?id=<?= htmlspecialchars($kupon['id']) ?>" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Sil
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -158,7 +143,6 @@ try {
     </table>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+<?php
+require_once 'footer.php';
+?>
